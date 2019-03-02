@@ -1,7 +1,5 @@
 from flask_socketio import SocketIO, emit
 
-import time
-
 DEBUG = False
 
 def check_iRacing(iR_sdk, iR_state):
@@ -16,11 +14,11 @@ def check_iRacing(iR_sdk, iR_state):
 
         iR_sdk.shutdown()
 
-        print('\nirsdk disconnected\n')
+        print('\niRacing disconnected\n')
 
     elif not iR_state.iR_connected and iR_sdk.startup() and iR_sdk.is_initialized and iR_sdk.is_connected:
         iR_state.set_iR_connected(True)
-        print('\nirsdk connected\n')
+        print('\niRacing connected\n')
 
     elif not iR_state.iR_connected:
         if(DEBUG):
@@ -30,14 +28,22 @@ def start_iR_telemetry(iR_sdk, iR_state, socketio):
     """
     Begin gathering iRacing telemetry data and send the data
     to the client.
-
-    Currently only gathering and sending session time (in seconds).
     """
 
-    check_iRacing(iR_sdk, iR_state)
+    try:
+        print('Attempting to connect to iRacing...\n')
 
-    if iR_state.iR_connected:
-        if iR_sdk['SessionTime']:
-            print('\nServer -> Session time: ' +  str(iR_sdk['SessionTime']) + '\n')
+        while True:
+            check_iRacing(iR_sdk, iR_state)
+
+            if iR_state.iR_connected:
+                if iR_sdk['SessionTime']:
+                    print('\nServer -> Session time: ' +  str(iR_sdk['SessionTime']) + '\n')
+                    
+                    socketio.emit('iR_data', {'sessionTime': iR_sdk['SessionTime']})
+
+            socketio.sleep(1)
             
-            socketio.emit('iR_data', {'sessionTime': iR_sdk['SessionTime']})
+    except KeyboardInterrupt:
+        # use Ctrl+c to exit
+        pass
