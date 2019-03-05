@@ -1,13 +1,13 @@
 import irsdk
-from iR_state import iR_state
 
 import eventlet
 eventlet.monkey_patch()
 
+from iR_state import IRState
+from iR_telemetry import start_iR_telemetry
+
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
-
-from iR_telemetry import start_iR_telemetry
 
 app = Flask(__name__)
 
@@ -15,7 +15,7 @@ app = Flask(__name__)
 socketio = SocketIO(app, async_mode='eventlet')
 
 iR_sdk = irsdk.IRSDK()
-iR_state = iR_state()
+iR_state = IRState()
 
 thread = None
 

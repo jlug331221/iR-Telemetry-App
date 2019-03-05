@@ -1,3 +1,5 @@
+from iR_data import IRData
+
 from flask_socketio import SocketIO, emit
 
 DEBUG = False
@@ -30,6 +32,8 @@ def start_iR_telemetry(iR_sdk, iR_state, socketio):
     to the client.
     """
 
+    iR_data = IRData()
+
     try:
         print('Attempting to connect to iRacing...\n')
 
@@ -37,10 +41,14 @@ def start_iR_telemetry(iR_sdk, iR_state, socketio):
             check_iRacing(iR_sdk, iR_state)
 
             if iR_state.iR_connected:
-                if iR_sdk['SessionTime']:
-                    print('\nServer -> Session time: ' +  str(iR_sdk['SessionTime']) + '\n')
+                iR_sdk.freeze_var_buffer_latest()
+
+                iR_data_json = iR_data.fetch_iR_telemetry_data(iR_sdk)
+                
+                if(DEBUG):
+                    print('\nServer -> Before sending iR JSON Data: ' + iR_data_json)
                     
-                    socketio.emit('iR_data', {'sessionTime': iR_sdk['SessionTime']})
+                socketio.emit('iR_data', iR_data_json)
 
             socketio.sleep(1)
             

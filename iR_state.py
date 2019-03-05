@@ -1,4 +1,4 @@
-class iR_state:
+class IRState:
     """
     iRacing state data
     """
